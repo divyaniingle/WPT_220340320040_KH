@@ -1,0 +1,209 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="jquery-3.5.1.min.js"></script>	
+    <script>
+        $(()=>{
+            function getItemOnItemno(bookid)
+            {
+                for(let i=0;i<items.length;i++)
+                {
+                    if(items[i].bookid==bookid)
+                    {
+                        output.itemnotfoundstatus=true;
+                        output.itemdetails=items[i];
+                        break;
+                    }
+                }
+                return output;
+            }
+
+            function updateitem(updatedobject)
+            {
+                let updated=false;
+                for(let i=0;i<items.length;i++)
+                {
+                   if(items[i].bookid==updatedobject.bookid)
+                   {
+                    items[i].price=updatedobject.price;
+                    items[i].bookname=updatedobject.bookname;
+                    updated=true;
+                    break;
+                   } 
+                }
+            return updated;
+            }
+
+            $("#show").click(()=>{
+                function show()
+                {
+                    let ajaxparams={
+                        data:{},
+                        url:"http://localhost:700/getallitems",
+                        type:"get",
+                        datatype:"json",
+                        success:(dgbs)=>{
+                            items=dgbs;
+                            let itemcontents="";
+                            for(let i=0;i<items.length;i++)
+                            {
+                                itemcontents="";  
+                                "<br/>" +
+                                items[i].bookid +
+                                "  "+
+                                items[i].bookname +
+                                "  "+
+                                items[i].price;
+                            }
+                            $("#contents").html(itemcontents);
+                        },
+                        error:(error)=>{
+                            console.log("error  :"+error);
+                        },
+
+                    };
+                    $.ajax(ajaxparams);
+                }
+                show()
+
+            });
+
+            $("#bookid").blur(()=>{
+            let y=$("#bookid").val();
+            document.querySelector("#bookid").disabled=true;
+            let ajaxparams={
+                data:{},
+                        url:"http://localhost:700/getitem",
+                        type:"get",
+                        datatype:"json",
+                        success:(output)=>{
+                            if(output.itemnotfoundstatus){
+                                $("#message").text("deatils found");
+                                $("#bookname").val(output.itemdetails.bookname);
+
+                                $("#price").val(output.itemdetails.price);
+                        }
+                        else{
+                            $("#message").text("deatils not found");
+                            $("#bookname").val("");
+                            $("#price").val("");
+                        }
+                        },
+                        error:(error)=>{
+                            console.log("error  :"+error);
+                        },
+
+            };
+            $.ajax(ajaxparams);
+            });
+
+            $("#add").click(()=>{
+                let input={
+                    x:$("#bookid").val(),
+                    y:$("#bookname").val(),
+                    z:$("#price").val(),
+
+                };
+                let ajaxparams={
+                    data:input,
+                        url:"http://localhost:700/additem",
+                        type:"get",
+                        datatype:"json",
+                        success:(output)=>{
+                            if(output)
+                            {
+                                $("#message").text("item aded");
+                                $("#message").removeClass("nm").addClass("em");
+                            }
+                            else{
+                                $("#message").text("could not add item");
+                            }
+
+                            $("#bookname").val("");
+                            $("#price").val("");
+
+                            document.querySelector("#bookid").disabled=false;
+
+                        },
+                        error:(error)=>{
+                            console.log("error  :"+error);
+                        },
+
+                };
+                $.ajax(ajaxparams);
+            });
+
+
+
+            $("#update").click(()=>{
+                let input={
+                    x:$("#bookid").val(),
+                    y:$("#bookname").val(),
+                    z:$("#price").val(),
+
+                };
+                let ajaxparams={
+                    data:input,
+                        url:"http://localhost:700/updateitem",
+                        type:"get",
+                        datatype:"json",
+                        success:(output)=>{
+                            if(output)
+                            {
+                                $("#message").text("item updated");
+                                $("#message").removeClass("em").addClass("nm");
+                            }
+                            else{
+                                $("#message").text("could not updated item");
+                            }
+
+                            $("#bookname").val("");
+                            $("#price").val("");
+
+                            document.querySelector("#bookid").disabled=false;
+                            document.querySelector("#bookid").focus();
+
+                        },
+                        error:(error)=>{
+                            console.log("error  :"+error);
+                        },
+
+                };
+                $.ajax(ajaxparams);
+            });
+
+        });
+    </script>
+    <style>
+        .em
+        {
+            color: green;;
+        }
+        .nm{
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+    <input type="text" id="bookid" placeholder="enter id" />
+    <span id="message">message</span>
+    <br>
+    <input type="text" id="bookname" placeholder="enter book name" />
+    <br>
+    <input type="text" id="price" placeholder="enter book price" />
+    <br>
+    <br>
+    <button id="update">update</button>
+    <button id="add">add</button>
+    <button id="showall">show item</button>
+<hr>
+<p id="contents">all items</p>
+
+</body>
+</body>
+</html>
